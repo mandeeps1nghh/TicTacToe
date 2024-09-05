@@ -1,5 +1,5 @@
 // tictactoe.js
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 
 const SQUARES_COUNT = 9;
 
@@ -19,7 +19,13 @@ const Board = ({ squares, onClick }) => {
   return (
     <div className="board">
       {squares.map((square, index) => (
-        <Square key={index} value={square} onClick={() => onClick(index)} />
+        <button
+          key={index}
+          className={`board-cell ${square}`}
+          onClick={() => handleClick(index)} // eslint-disable-line no-undef
+          data-content={square}
+          aria-label={`Square ${index + 1}`}
+        />
       ))}
     </div>
   );
@@ -43,6 +49,7 @@ const TicTacToe = () => {
   const [winner, setWinner] = useState(null);
   const [player1Score, setPlayer1Score] = useState(0);
   const [player2Score, setPlayer2Score] = useState(0);
+  const [isDraw, setIsDraw] = useState(false);
 
   const handlePlayer1NameChange = (e) => {
     setPlayer1Name(e.target.value.trim());
@@ -63,25 +70,35 @@ const TicTacToe = () => {
     }
   };
 
-  const handleClick = useCallback(
-    (i) => {
-      if (gameOver || squares[i] !== null) {
-        return;
+  const handleClick = useCallback((index) => {
+    if (squares[index] || winner || isDraw) return;
+    
+    const newSquares = [...squares];
+    newSquares[index] = xIsNext ? 'X' : 'O';
+    setSquares(newSquares);
+    
+    const newWinner = calculateWinner(newSquares);
+    if (newWinner) {
+      setWinner(newWinner);
+      // Update score here
+      if (newWinner === player1Symbol) {
+        setPlayer1Score((prevScore) => prevScore + 1);
+      } else {
+        setPlayer2Score((prevScore) => prevScore + 1);
       }
-
-      const newSquares = [...squares];
-      newSquares[i] = xIsNext ? player1Symbol : (player1Symbol === 'X' ? 'O' : 'X');
-      setSquares(newSquares);
+    } else if (newSquares.every(square => square !== null)) {
+      setIsDraw(true);
+    } else {
       setXIsNext(!xIsNext);
-    },
-    [gameOver, squares, xIsNext, player1Symbol]
-  );
+    }
+  }, [squares, xIsNext, winner, isDraw, player1Symbol]);
 
   const handleReset = useCallback(() => {
     setSquares(Array(SQUARES_COUNT).fill(null));
     setXIsNext(true);
     setGameOver(false);
     setWinner(null);
+    setIsDraw(false);
   }, []);
 
   const handleNewGame = useCallback(() => {
@@ -122,14 +139,12 @@ const TicTacToe = () => {
       [0, 4, 8],
       [2, 4, 6],
     ];
-
     for (let i = 0; i < lines.length; i++) {
       const [a, b, c] = lines[i];
       if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
         return squares[a];
       }
     }
-
     return null;
   };
 
@@ -150,44 +165,45 @@ const TicTacToe = () => {
   return (
     <div className="outer">
       {startGame ? (
-        <>
-          <div className="card">
-            <div className="jumbotron text-center">
-              <h1>Tic Tac Toe</h1>
-            </div>
+        <div className="grid-container">
+          <h1 className="game-title">Tic Tac Toe</h1>
+          <div className="game-content">
             <div className="board">
-              <Board squares={squares} onClick={handleClick} />
+              {squares.map((square, index) => (
+                <button
+                  key={index}
+                  className={`board-cell ${square}`}
+                  onClick={() => handleClick(index)}
+                  data-content={square}
+                  aria-label={`Square ${index + 1}`}
+                />
+              ))}
             </div>
-            {gameOver && (
-              <div className="text-center mt-4">
-                {winner ? (
-                  <p>
-                    Player {winner === 'X' ? player1Name : player2Name} wins!
-                  </p>
-                ) : (
-                  <p>
-                    It's a draw!
-                  </p>
-                )}
-                <button className="button" onClick={handleReset} aria-label="Reset game">
-                  <ArrowIcon />
-                  <span className="text">Reset</span>
+            <div className="game-info">
+              <div className="score-card">
+                <h2>Score</h2>
+                <p>{player1Name}: {player1Score}</p>
+                <p>{player2Name}: {player2Score}</p>
+              </div>
+              {(winner || isDraw) && (
+                <div className="game-result">
+                  {winner ? `Winner: ${winner === player1Symbol ? player1Name : player2Name}` : 'Draw!'}
+                </div>
+              )}
+              <div className="game-controls">
+                <button className="reset-button" onClick={handleReset}>
+                  <span>Reset</span>
                 </button>
-                <button className="button" onClick={handleNewGame} aria-label="New game">
-                  <ArrowIcon />
-                  <span className="text">New Game</span>
+                <button className="new-game-button" onClick={handleNewGame}>
+                  <span>New Game</span>
                 </button>
               </div>
-            )}
+            </div>
           </div>
-          <div className="score-card">
-            <h2>Score</h2>
-            <p>{player1Name}: {player1Score}</p>
-            <p>{player2Name}: {player2Score}</p>
-          </div>
-        </>
+        </div>
       ) : (
         <div className="prescreen">
+          <h1 className="game-title">Tic Tac Toe</h1>
           <form>
             <div className="input-row">
               <div className="inputbox">
