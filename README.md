@@ -55,10 +55,6 @@ A sleek, interactive implementation of the classic Tic Tac Toe game, built with 
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
-
 ## Acknowledgments
 
 - Inspired by the classic Tic Tac Toe game
