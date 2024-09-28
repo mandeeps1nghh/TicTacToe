@@ -1,5 +1,9 @@
 // tictactoe.js
 import React, { useState, useCallback, useEffect } from 'react';
+// At the top of the file, add this import
+import './tictactoe.css';
+
+// ... rest of your code remains unchanged ...
 
 const SQUARES_COUNT = 9;
 
@@ -74,14 +78,14 @@ const TicTacToe = () => {
     if (squares[index] || winner || isDraw) return;
     
     const newSquares = [...squares];
-    newSquares[index] = xIsNext ? 'X' : 'O';
+    const currentPlayerSymbol = xIsNext ? 'X' : 'O';
+    newSquares[index] = currentPlayerSymbol;
     setSquares(newSquares);
     
     const newWinner = calculateWinner(newSquares);
     if (newWinner) {
       setWinner(newWinner);
-      // Update score here
-      if (newWinner === player1Symbol) {
+      if (currentPlayerSymbol === player1Symbol) {
         setPlayer1Score((prevScore) => prevScore + 1);
       } else {
         setPlayer2Score((prevScore) => prevScore + 1);
@@ -117,11 +121,6 @@ const TicTacToe = () => {
       if (winner) {
         setWinner(winner);
         setGameOver(true);
-        if (winner === 'X') {
-          setPlayer1Score((prevScore) => prevScore + 1);
-        } else {
-          setPlayer2Score((prevScore) => prevScore + 1);
-        }
       } else if (isBoardFull(squares)) {
         setGameOver(true);
       }
